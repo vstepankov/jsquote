@@ -1,0 +1,88 @@
+<?php
+/**
+ * @file
+ * TODO: Enter file description here.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function jsquote_menu(){
+  $items['admin/config/content/quote/jsquote'] = array(
+    'title' => 'jsquote',
+    'description' =>  'Configure jsquote settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jquote_admin_settings'),
+    'access arguments' => array('jsquote mymodule'),
+  );
+  
+  return $items;
+}
+
+function jquote_admin_settings($form){
+  $form['jsquote_hide_quote_link'] = array(
+    '#type' => 'checkbox', 
+    '#title' => t('Hide quote link'), 
+    '#default_value' => variable_get('jsquote_hide_quote_link', FALSE),
+  );
+  return system_settings_form($form);
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function jsquote_node_view($node, $view_mode) {
+  if (user_access('post comments') && in_array($node->type, _quote_variable_get('node_types')) && $node->comment == COMMENT_NODE_OPEN && _quote_variable_get('node_link_display')) {
+    $links['jsquote'] = array(
+      'title' => jsquote_image_title($node->name),
+      'html' => TRUE,
+    );
+
+    $node->content['links']['jsquote'] = array(
+      '#links' => $links,
+    );
+  }
+}
+
+/**
+ * Implements hook_comment_view().
+ */
+function jsquote_comment_view($comment) {
+  if (user_access('post comments')) {
+    $node = node_load($comment->nid);
+    if (in_array($node->type, _quote_variable_get('node_types')) && $node->comment == COMMENT_NODE_OPEN) {
+     $links['jsquote'] = array(
+      'title' => jsquote_image_title($comment->name),
+      'html' => TRUE,
+    );
+      $comment->content['links']['jsquote'] = array(
+        '#links' => $links,
+        '#attributes' => array('class' => array('links', 'inline'))
+      );
+    }
+  }
+}
+
+function jsquote_image_title($name){
+  static $image = FALSE;
+  static $js = FALSE;
+  static $css	= FALSE;
+
+  if(!$js){
+    $js = drupal_add_js(drupal_get_path('module', 'jsquote').'/js/jsquote.js');
+  }
+	
+  if(!$image){
+    $image = '/'.drupal_get_path('module', 'jsquote').'/img/blog_pencil.gif';
+    }
+	
+  if(!$css){
+    $css = drupal_add_css(drupal_get_path('module', 'jsquote').'/css/jsquote.css');
+    }
+	
+  return '<img class="js-quote" data-name="'.check_plain($name).'" title="Выделите текст и нажмите эту кнопку, чтобы вставить цитату" id="img_quote" src="'.$image.'" ilo-full-src="'.$image.'"/>';
+}
+
+function jsquote_form_comment_form_alter(&$form, &$form_state) {	
+  drupal_add_js(array('jsquote' => array('lang' => $form['comment_body']['#language'])), 'setting');
+}

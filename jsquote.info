@@ -1,0 +1,7 @@
+name = jsquote
+description = javascript-based quoting
+dependencies[] = quote
+core = 7.x
+files[] = jsquote.module
+files[] = jsquote.install
+configure = admin/config/content/quote/jsquote

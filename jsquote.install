@@ -1,0 +1,19 @@
+<?php
+/**
+ * @file
+ * TODO: Enter file description here.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function jsquote_install() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function jsquote_uninstall() {
+  variable_del('jsquote_hide_quote_link');
+}
